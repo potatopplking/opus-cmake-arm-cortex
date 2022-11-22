@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
+set(CMAKE_TOOLCHAIN_FILE "../arm-cmake-toolchains/arm-gcc-toolchain.cmake")
 project(opus)
 
 #pull submodule if not already here
@@ -8,6 +9,12 @@ execute_process(COMMAND git submodule update --init -- .
 option(OPUS_USE_ALLOCA "USE_ALLOCA" ON)
 option(OPUS_FIXED_POINT "FIXED_POINT" OFF)
 option(OPUS_DISABLE_FLOAT_API "DISABLE_FLOAT_API" OFF)
+option(CPU_ARM "CPU_ARM" ON)
+
+# use static memory allocation instead of malloc/free,
+# -> you won't be able to use _create() and _destroy() calls for Opus context handling, use _init() instead
+# (see https://wiki.xiph.org/OpusFAQ#I_can.27t_use_malloc_or_much_stack_on_my_embedded_platform._How_do_I_make_Opus_work.3F)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DOVERRIDE_OPUS_ALLOC -DOVERRIDE_OPUS_FREE -D'opus_alloc(x)=NULL' -D'opus_free(x)=NULL'")
 
 set(OPUS_INCLUDE_DIR
   ${CMAKE_CURRENT_SOURCE_DIR}/opus/include
