@@ -28,6 +28,14 @@ If you want to enable dynamic OPUS context allocation, simply delete/comment out
 
 ## Compiling
 
+If you didn't clone this repo with `--recursive`, you have to initialize submodules by executing:
+
+```
+git submodule update --init
+```
+
+* `arm-none-eabi` GCC binaries has to be installed (and added to your PATH).
+
 ```bash
 mkdir build_arm-none-eabi
 cd build_arm-none-eabi
@@ -44,6 +52,8 @@ Which should give you `libopus.a` static library.
 Include opus header files and link the static library.
 
 ### STM32CubeIDE
+
+
 
 ## Notes
 
