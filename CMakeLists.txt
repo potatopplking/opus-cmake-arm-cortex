@@ -16,6 +16,9 @@ option(CPU_ARM "CPU_ARM" ON)
 # (see https://wiki.xiph.org/OpusFAQ#I_can.27t_use_malloc_or_much_stack_on_my_embedded_platform._How_do_I_make_Opus_work.3F)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DOVERRIDE_OPUS_ALLOC -DOVERRIDE_OPUS_FREE -D'opus_alloc(x)=NULL' -D'opus_free(x)=NULL'")
 
+# options taken from STM32CubeIDE; modify these for your MCU (e.g. which Cortex, MCU type, FPU present)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mcpu=cortex-m4 -DSTM32L4R9xx -ffunction-sections -fdata-sections --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb")
+
 set(OPUS_INCLUDE_DIR
   ${CMAKE_CURRENT_SOURCE_DIR}/opus/include
 )
