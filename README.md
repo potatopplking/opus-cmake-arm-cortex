@@ -22,9 +22,13 @@ In this configuration dynamic memory allocation is disabled. In OPUS, this is do
 
 From [documentation](https://wiki.xiph.org/OpusFAQ#I_can.27t_use_malloc_or_much_stack_on_my_embedded_platform._How_do_I_make_Opus_work.3F): compile with `CFLAGS="-DOVERRIDE_OPUS_ALLOC -DOVERRIDE_OPUS_FREE -D'opus_alloc(x)=NULL' -D'opus_free(x)=NULL' "`.
 
-Then use _init() functions instad of _create() (e.g. for encoder).
+Then use `_init()` functions instad of `_create()` (e.g. for encoder).
 
 If you want to enable dynamic OPUS context allocation, simply delete/comment out this part from CMakeLists.txt.
+
+Note that using static allocation will bring some issues when compiling - namely that `OpusEncoder` struct is defined in `opus_encoder.c` (why Opus, why??), so defining `OpusEncoder` variable will fail, as compiler does not know the size and shape of the struct.
+
+This issue can be solved by a dirty trick - defining char array of size 48492 (obtained from `get_encoder_size.c`) and casting to `OpusEncoder*`. For this alone I will burn in hell.
 
 ## Compiling
 
@@ -51,9 +55,31 @@ Which should give you `libopus.a` static library.
 
 Include opus header files and link the static library.
 
-### STM32CubeIDE
+Note that order of library inclusion matters:
+```
+gcc get_encoder_size.c -o get_encoder_size -lm -I opus/include -L build_x86/ -lopus
+```
 
 
+### STM32CubeIDE (Eclipse-based IDE)
+
+0. Create STM32CubeIDE project
+1. Clone repository to `Middlewares/Third_Party`
+2. Compile OPUS using instructions above
+3. Add OPUS to include path
+    * In *Project Explorer* right click on `include` folder in `opus-cmake-arm-cortex/opus`
+    * Select *Add/Remove include path*
+    * Confirm dialog
+4. Exclude OPUS folder from build
+    * In *Project Explorer* right click on `opus` folder in `opus-cmake-arm-cortex/`
+    * *Resource Configurations* -> *Exclude from Build*
+    * Select all configurations and confirm
+5. Link `libopus.a`
+    * Open *Project -> Properties*, go to *C/C++ Build* -> *Settings*
+    * Select *Tool Settings* tab, *MCU GCC Linker* -> *Libraries*
+    * Add library `opus`
+    * Add library search path `"${workspace_loc:/${ProjName}/Middlewares/Third_Party/opus-cmake-arm-cortex/build_arm-none-eabi}"`
+    * *Apply and close*
 
 ## Notes
 
@@ -63,7 +89,7 @@ From [documentation](https://wiki.xiph.org/OpusFAQ#I_can.27t_use_malloc_or_much_
 
 - enable hardfpu, if present on device
 - use fixed-point floats
-- decrease decrease complexity (OPUS_SET_COMPLEXITY)
+- decrease decrease complexity (`OPUS_SET_COMPLEXITY`)
   
 Size of opus library can be decreased by:
 
